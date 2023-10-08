@@ -36,5 +36,8 @@
     "@types/cors": "^2.8.14",
     "@types/jsonwebtoken": "^9.0.3",
     "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
