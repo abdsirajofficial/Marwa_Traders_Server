@@ -222,10 +222,64 @@ async function getReportsBy(req: Request, res: Response) {
 
 //#region
 //getProductsReports 
-async function getProductsReports(req: Request, res: Response) {
+// async function getProductsReports(req: Request, res: Response) {
+//   try {
+//     const maxResult = parseInt(req.query.maxResult as string) || 10;
+//     const page = parseInt(req.query.page as string) || 1;
+//     const invoiceNumber = parseInt(req.query.invoiceNumber as string);
+
+//     if (isNaN(invoiceNumber)) {
+//       return res.status(400).json({
+//         error: "Invalid invoiceNumber. Please provide a valid invoiceNumber.",
+//       });
+//     }
+
+//     const whereCondition: any = {
+//       invoiceNumber: invoiceNumber,
+//     };
+
+//     const reports = await prisma.reports.findMany({
+//       where: whereCondition,
+//       take: maxResult,
+//       skip: (page - 1) * maxResult,
+//     });
+
+//     const totalReportsCount = await prisma.reports.count({
+//       where: whereCondition,
+//     });
+
+//     if (reports.length === 0) {
+//       return res.status(404).json({
+//         error: {
+//           message: "No reports available for the given invoice number.",
+//         },
+//       });
+//     }
+
+//     const totalPages = Math.ceil(totalReportsCount / maxResult);
+
+//     if (page > totalPages) {
+//       return res.status(404).json({
+//         error: {
+//           message: "Page not found.",
+//         },
+//       });
+//     }
+
+//     return res.json({
+//       success: reports,
+//       totalReportsCount,
+//       totalPages,
+//     });
+
+//   } catch (error) {
+//     return res.status(500).json({ error: "Internal server error." });
+//   }
+// }
+//#endregion
+
+async function getProductsReports(req: Request, res : Response) {
   try {
-    const maxResult = parseInt(req.query.maxResult as string) || 10;
-    const page = parseInt(req.query.page as string) || 1;
     const invoiceNumber = parseInt(req.query.invoiceNumber as string);
 
     if (isNaN(invoiceNumber)) {
@@ -234,17 +288,11 @@ async function getProductsReports(req: Request, res: Response) {
       });
     }
 
-    const whereCondition: any = {
+    const whereCondition = {
       invoiceNumber: invoiceNumber,
     };
 
     const reports = await prisma.reports.findMany({
-      where: whereCondition,
-      take: maxResult,
-      skip: (page - 1) * maxResult,
-    });
-
-    const totalReportsCount = await prisma.reports.count({
       where: whereCondition,
     });
 
@@ -256,27 +304,15 @@ async function getProductsReports(req: Request, res: Response) {
       });
     }
 
-    const totalPages = Math.ceil(totalReportsCount / maxResult);
-
-    if (page > totalPages) {
-      return res.status(404).json({
-        error: {
-          message: "Page not found.",
-        },
-      });
-    }
-
     return res.json({
       success: reports,
-      totalReportsCount,
-      totalPages,
     });
 
   } catch (error) {
     return res.status(500).json({ error: "Internal server error." });
   }
 }
-//#endregion
+
 
 //#region
 //getByName
