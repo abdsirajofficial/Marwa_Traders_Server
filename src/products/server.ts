@@ -59,6 +59,7 @@ async function addProducts(req: Request, res: Response) {
           quantity: resultData.quantity,
           mrp: resultData.mrp,
           discount: resultData.discount,
+          addMargin: resultData.addMargin,
           netRate: resultData.netRate,
           category: resultData.category,
         },
@@ -244,6 +245,9 @@ async function editProduct(req: Request, res: Response) {
 
       if (updatedData.discount !== undefined) {
         updateFields.discount = updatedData.discount;
+      }
+      if (updatedData.addMargin !== undefined) {
+        updateFields.addMargin = updatedData.addMargin;
       }
 
       if (updatedData.netRate !== undefined) {

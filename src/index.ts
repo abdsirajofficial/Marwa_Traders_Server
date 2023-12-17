@@ -22,4 +22,6 @@ app.use('/user', loginRouter);
 app.use('/billing', billingRouter);
 app.use('/reports', reportRouter);
 
-app.listen(PORT)
+app.listen(PORT, ()=> {
+    console.log("success",PORT)
+})
