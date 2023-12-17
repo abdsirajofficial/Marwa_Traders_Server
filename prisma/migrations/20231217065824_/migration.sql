@@ -14,6 +14,7 @@ CREATE TABLE `products` (
     `quantity` INTEGER NOT NULL,
     `mrp` DOUBLE NOT NULL,
     `discount` DOUBLE NOT NULL,
+    `addMargin` DOUBLE NOT NULL,
     `netRate` DOUBLE NOT NULL,
     `category` VARCHAR(191) NOT NULL,
 
