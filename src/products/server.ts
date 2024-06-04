@@ -90,15 +90,23 @@ async function getProducts(req: Request, res: Response) {
   try {
     const maxResult = parseInt(req.query.maxResult as string) || 8;
     const productName = req.query.productName as string;
+    const type = req.query.type as string; // Get the type query parameter
     let page = parseInt(req.query.page as string) || 1;
 
-    const whereCondition = productName
-      ? {
-          productName: {
-            contains: productName,
-          },
-        }
-      : {};
+    // Build the where condition based on the type and productName
+    const whereCondition: any = {};
+
+    if (productName) {
+      whereCondition.productName = {
+        contains: productName,
+      };
+    }
+
+    if (type) {
+      whereCondition.productName = {
+        contains: type,
+      };
+    }
 
     const totalProductsCount = await prisma.products.count({
       where: whereCondition,
@@ -146,6 +154,7 @@ async function getProducts(req: Request, res: Response) {
     });
   }
 }
+
 //#endregion
 
 //#region
