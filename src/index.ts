@@ -22,9 +22,4 @@ app.use('/user', loginRouter);
 app.use('/billing', billingRouter);
 app.use('/reports', reportRouter);
 
-app.use('/sample', async (req, res) => {
-    console.log("hello world");
-    return res.json({ message: "Hello World" });
-});
-
 app.listen(PORT)
