@@ -1,5 +1,7 @@
 import express, { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import { editInvoiceData, editInvoiceSchema } from "./model";
+import { fromZodError } from "zod-validation-error";
 
 const prisma = new PrismaClient();
 
@@ -11,6 +13,7 @@ reportRouter.get("/by", getReportsBy);
 reportRouter.get("/products", getProductsReports);
 reportRouter.get("/byName", getByName);
 reportRouter.get("/pdf", getPdf);
+// reportRouter.put("/edit", editInvoice);
 
 //#region
 //get Reports
@@ -42,7 +45,9 @@ async function getReport(req: Request, res: Response) {
       },
     });
 
-    const distinctInvoiceNumbers = countByInvoiceNumber.map((item) => item.invoiceNumber);
+    const distinctInvoiceNumbers = countByInvoiceNumber.map(
+      (item) => item.invoiceNumber
+    );
 
     const firstProductsByInvoice = await Promise.all(
       distinctInvoiceNumbers.map(async (invoiceNumber) => {
@@ -62,7 +67,10 @@ async function getReport(req: Request, res: Response) {
         });
         return {
           invoiceNumber: invoiceNumber,
-          _count: countByInvoiceNumber.find((item) => item.invoiceNumber === invoiceNumber)?._count._all || 0,
+          _count:
+            countByInvoiceNumber.find(
+              (item) => item.invoiceNumber === invoiceNumber
+            )?._count._all || 0,
           firstProduct: firstProduct,
         };
       })
@@ -70,7 +78,10 @@ async function getReport(req: Request, res: Response) {
 
     const startIndex = (page - 1) * maxResult;
     const endIndex = startIndex + maxResult;
-    const paginatedFirstProducts = firstProductsByInvoice.slice(startIndex, endIndex);
+    const paginatedFirstProducts = firstProductsByInvoice.slice(
+      startIndex,
+      endIndex
+    );
 
     if (paginatedFirstProducts.length === 0) {
       return res.status(404).json({
@@ -90,25 +101,113 @@ async function getReport(req: Request, res: Response) {
       });
     }
 
-        const countByInvoiceNumbers = await prisma.reports.groupBy({
-          by: ["invoiceNumber"],
-          _count: {
-            _all: true,
-          },
-          where: whereCondition,
-        });
+    const countByInvoiceNumbers = await prisma.reports.groupBy({
+      by: ["invoiceNumber"],
+      _count: {
+        _all: true,
+      },
+      where: whereCondition,
+    });
 
     return res.json({
       success: paginatedFirstProducts,
       totalReportsCount,
       totalPages,
       currentPage: page,
-      countByInvoiceNumbers
+      countByInvoiceNumbers,
     });
   } catch (error) {
     return res.status(500).json({ error: "Internal server error." });
   }
 }
+
+//#endregion
+
+//#region
+//edit reports
+// async function editInvoice(req: Request, res: Response) {
+//   try {
+//     const { invoiceNumber } = req.params;
+
+//     if (!invoiceNumber) {
+//       return res.status(400).json({
+//         error: "Invoice number is required",
+//       });
+//     }
+
+//     const data = editInvoiceSchema.safeParse(req.body);
+
+//     if (!data.success) {
+//       let errMessage: string = fromZodError(data.error).message;
+//       return res.status(400).json({
+//         error: {
+//           message: errMessage,
+//         },
+//       });
+//     }
+
+//     const updatedData: editInvoiceData = data.data;
+
+//     const existingInvoice = await prisma.reports.findFirst({
+//       where: {
+//         invoiceNumber: parseInt(invoiceNumber, 10),
+//       },
+//     });
+
+//     if (!existingInvoice) {
+//       return res.status(404).json({
+//         error: "Invoice not found.",
+//       });
+//     }
+
+//     const updateFields: Record<string, any> = {};
+
+//     if (updatedData.spl !== undefined) {
+//       updateFields.spl = updatedData.spl;
+//     }
+
+//     if (updatedData.name !== undefined) {
+//       updateFields.name = updatedData.name;
+//     }
+
+//     if (updatedData.area !== undefined) {
+//       updateFields.area = updatedData.area;
+//     }
+
+//     if (updatedData.date !== undefined) {
+//       updateFields.date = updatedData.date;
+//     }
+
+//     if (updatedData.discount !== undefined) {
+//       updateFields.discount = updatedData.discount;
+//     }
+
+//     if (updatedData.quantity !== undefined) {
+//       updateFields.quantity = updatedData.quantity;
+//     }
+
+//     if (updatedData.mrp !== undefined) {
+//       updateFields.mrp = updatedData.mrp;
+//     }
+
+//     const updatedInvoice = await prisma.reports.update({
+//       where: {
+//         id: existingInvoice.id,
+//       },
+//       data: updateFields,
+//     });
+
+//     return res.json({
+//       success: "Invoice updated successfully.",
+//       updatedInvoice,
+//     });
+//   } catch (error) {
+//     console.error("Error updating invoice:", error);
+//     return res.status(500).json({
+//       error: "Internal server error",
+//     });
+//   }
+// }
 //#endregion
 
 //#region
@@ -151,7 +250,9 @@ async function getReportsBy(req: Request, res: Response) {
       },
     });
 
-    const distinctInvoiceNumbers = countByInvoiceNumber.map((item) => item.invoiceNumber);
+    const distinctInvoiceNumbers = countByInvoiceNumber.map(
+      (item) => item.invoiceNumber
+    );
 
     const firstProductsByInvoice = await Promise.all(
       distinctInvoiceNumbers.map(async (invoiceNumber) => {
@@ -171,7 +272,10 @@ async function getReportsBy(req: Request, res: Response) {
         });
         return {
           invoiceNumber: invoiceNumber,
-          _count: countByInvoiceNumber.find((item) => item.invoiceNumber === invoiceNumber)?._count._all || 0, // Handle possibly undefined value
+          _count:
+            countByInvoiceNumber.find(
+              (item) => item.invoiceNumber === invoiceNumber
+            )?._count._all || 0, // Handle possibly undefined value
           firstProduct: firstProduct,
         };
       })
@@ -179,7 +283,10 @@ async function getReportsBy(req: Request, res: Response) {
 
     const startIndex = (page - 1) * maxResult;
     const endIndex = startIndex + maxResult;
-    const paginatedFirstProducts = firstProductsByInvoice.slice(startIndex, endIndex);
+    const paginatedFirstProducts = firstProductsByInvoice.slice(
+      startIndex,
+      endIndex
+    );
 
     if (paginatedFirstProducts.length === 0) {
       return res.status(404).json({
@@ -212,7 +319,7 @@ async function getReportsBy(req: Request, res: Response) {
       totalReportsCount,
       totalPages,
       currentPage: page,
-      countByInvoiceNumbers
+      countByInvoiceNumbers,
     });
   } catch (error) {
     return res.status(500).json({ error: "Internal server error." });
@@ -221,7 +328,7 @@ async function getReportsBy(req: Request, res: Response) {
 //#endregion
 
 //#region
-//getProductsReports 
+//getProductsReports
 // async function getProductsReports(req: Request, res: Response) {
 //   try {
 //     const maxResult = parseInt(req.query.maxResult as string) || 10;
@@ -278,7 +385,7 @@ async function getReportsBy(req: Request, res: Response) {
 // }
 //#endregion
 
-async function getProductsReports(req: Request, res : Response) {
+async function getProductsReports(req: Request, res: Response) {
   try {
     const invoiceNumber = parseInt(req.query.invoiceNumber as string);
 
@@ -307,12 +414,10 @@ async function getProductsReports(req: Request, res : Response) {
     return res.json({
       success: reports,
     });
-
   } catch (error) {
     return res.status(500).json({ error: "Internal server error." });
   }
 }
-
 
 //#region
 //getByName
@@ -350,7 +455,9 @@ async function getByName(req: Request, res: Response) {
       },
     });
 
-    const distinctInvoiceNumbers = countByInvoice.map((item) => item.invoiceNumber);
+    const distinctInvoiceNumbers = countByInvoice.map(
+      (item) => item.invoiceNumber
+    );
 
     const firstProductsByInvoice = await Promise.all(
       distinctInvoiceNumbers.map(async (invoiceNumber) => {
@@ -370,7 +477,9 @@ async function getByName(req: Request, res: Response) {
         });
         return {
           invoiceNumber: invoiceNumber,
-          _count: countByInvoice.find((item) => item.invoiceNumber === invoiceNumber)?._count._all || 0,
+          _count:
+            countByInvoice.find((item) => item.invoiceNumber === invoiceNumber)
+              ?._count._all || 0,
           firstProduct: firstProduct,
         };
       })
@@ -435,7 +544,9 @@ async function getPdf(req: Request, res: Response) {
       },
     });
 
-    const distinctInvoiceNumbers = countByInvoiceNumber.map((item) => item.invoiceNumber);
+    const distinctInvoiceNumbers = countByInvoiceNumber.map(
+      (item) => item.invoiceNumber
+    );
 
     const firstProductsByInvoice = await Promise.all(
       distinctInvoiceNumbers.map(async (invoiceNumber) => {
@@ -455,7 +566,10 @@ async function getPdf(req: Request, res: Response) {
         });
         return {
           invoiceNumber: invoiceNumber,
-          _count: countByInvoiceNumber.find((item) => item.invoiceNumber === invoiceNumber)?._count._all || 0,
+          _count:
+            countByInvoiceNumber.find(
+              (item) => item.invoiceNumber === invoiceNumber
+            )?._count._all || 0,
           firstProduct: firstProduct,
         };
       })
@@ -480,7 +594,7 @@ async function getPdf(req: Request, res: Response) {
     return res.json({
       success: firstProductsByInvoice,
       totalReportsCount,
-      countByInvoiceNumbers
+      countByInvoiceNumbers,
     });
   } catch (error) {
     return res.status(500).json({ error: "Internal server error." });
